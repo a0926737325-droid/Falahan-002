@@ -7,8 +7,8 @@ from io import BytesIO
 
 # --- 0. 系統配置 ---
 st.set_page_config(
-    page_title="阿美語 - 海洋 Liyal", 
-    page_icon="🌊", 
+    page_title="阿美語 - 河流 'Alo", 
+    page_icon="🏞️", 
     layout="centered", 
     initial_sidebar_state="collapsed"
 )
@@ -18,7 +18,7 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap');
 
-    /* 全局背景：深海藍黑 */
+    /* 全局背景：深藍黑 */
     .stApp { 
         background-color: #000810;
         background-image: radial-gradient(circle at 50% 0%, #0D47A1 0%, #000810 80%);
@@ -120,40 +120,31 @@ st.markdown("""
 
 # --- 1. 資料設定 ---
 VOCABULARY = [
-    {"amis": "salawacan", "zh": "海岸", "emoji": "🏖️", "file": "v_salawacan"},
-    {"amis": "kanatal",   "zh": "海島", "emoji": "🏝️", "file": "v_kanatal"},
-    {"amis": "tapelik nu liyal/laying nu liyal", "zh": "海浪", "emoji": "🌊", "file": "v_tapelik"},
-    {"amis": "cunami",    "zh": "海嘯", "emoji": "🌊🌪️", "file": "v_cunami"},
-    {"amis": "rariyaran", "zh": "海上", "emoji": "🚢", "file": "v_rariyaran"},
+    {"amis": "fating", "zh": "魚", "emoji": "🐟", "file": "v_fating"},
+    {"amis": "kalang", "zh": "螃蟹", "emoji": "🦀", "file": "v_kalang"},
+    {"amis": "'alo",   "zh": "河流", "emoji": "🏞️", "file": "v_alo"}, # 擴充字彙使排版與測驗更完整
 ]
 
 SENTENCES = [
     {
-        "amis": "Iraay ku valiyus, matungalay ku tapelik tu salawacan nu liyal.", 
-        "zh": "有颱風，沿海地區的浪變高了。", 
-        "emoji": "🌀", 
-        "file": "s_valiyus"
+        "amis": "Mifoting kako i 'alo.", 
+        "zh": "我在河邊抓魚。", 
+        "emoji": "🎣", 
+        "file": "s_mifoting"
     },
     {
-        "amis": "Cacay ofad ku kasakanatal nu Ripun.", 
-        "zh": "日本有一萬多個海島。", 
-        "emoji": "🇯🇵", 
-        "file": "s_ripun"
-    },
-    {
-        "amis": "I rariyaran adihayay ku lunan a mivuting.", 
-        "zh": "在海上有很多漁船捕魚。", 
-        "emoji": "🛥️", 
-        "file": "s_lunan"
+        "amis": "Mikalang kako i 'alo.", 
+        "zh": "我在河邊抓螃蟹。", 
+        "emoji": "🦀", 
+        "file": "s_mikalang"
     },
 ]
 
 QUIZ_DATA = [
-    {"q": "Iraay ku valiyus, matungalay ku ______ tu salawacan nu liyal.", "zh": "有颱風，沿海地區的浪變高了", "ans": "tapelik", "opts": ["tapelik", "kanatal", "cunami"]},
-    {"q": "______ / 海嘯", "zh": "海嘯", "ans": "cunami", "opts": ["cunami", "salawacan", "rariyaran"]},
-    {"q": "I ______ adihayay ku lunan a mivuting.", "zh": "在海上有很多漁船捕魚", "ans": "rariyaran", "opts": ["rariyaran", "kanatal", "salawacan"]},
-    {"q": "______ / 海島", "zh": "海島", "ans": "kanatal", "opts": ["kanatal", "tapelik", "cunami"]},
-    {"q": "______ / 海岸", "zh": "海岸", "ans": "salawacan", "opts": ["salawacan", "rariyaran", "kanatal"]},
+    {"q": "Mi______ kako i 'alo.", "zh": "我在河邊抓魚。", "ans": "foting", "opts": ["foting", "kalang", "'alo"]},
+    {"q": "______ / 螃蟹", "zh": "螃蟹", "ans": "kalang", "opts": ["kalang", "fating", "'alo"]},
+    {"q": "Mikalang kako i ______.", "zh": "我在河邊抓螃蟹。", "ans": "'alo", "opts": ["'alo", "kalang", "fating"]},
+    {"q": "______ / 魚", "zh": "魚", "ans": "fating", "opts": ["fating", "kalang", "'alo"]},
 ]
 
 # --- 1.5 強力語音核心 (診斷版) ---
@@ -190,7 +181,8 @@ def init_quiz():
     # Q1
     q1_target = random.choice(VOCABULARY)
     others = [v for v in VOCABULARY if v['amis'] != q1_target['amis']]
-    q1_options = random.sample(others, 2) + [q1_target]
+    sample_size = min(len(others), 2) # 自動判斷防止資料過少報錯
+    q1_options = random.sample(others, sample_size) + [q1_target]
     random.shuffle(q1_options)
     st.session_state.q1_data = {"target": q1_target, "options": q1_options}
 
@@ -202,10 +194,8 @@ def init_quiz():
     # Q3
     q3_target = random.choice(SENTENCES)
     other_sentences = [s['zh'] for s in SENTENCES if s['zh'] != q3_target['zh']]
-    if len(other_sentences) < 2:
-        q3_options = other_sentences + [q3_target['zh']]
-    else:
-        q3_options = random.sample(other_sentences, 2) + [q3_target['zh']]
+    sample_size = min(len(other_sentences), 2) # 自動判斷防止資料過少報錯
+    q3_options = random.sample(other_sentences, sample_size) + [q3_target['zh']]
     random.shuffle(q3_options)
     st.session_state.q3_data = {"target": q3_target, "options": q3_options}
 
@@ -254,7 +244,8 @@ def show_quiz_mode():
         play_audio(target['amis'], filename_base=target['file'])
         st.write("")
         
-        cols = st.columns(3)
+        # 動態調整按鈕欄位數量
+        cols = st.columns(len(data['options']))
         for idx, opt in enumerate(data['options']):
             with cols[idx]:
                 if st.button(f"{opt['zh']}", key=f"q1_{idx}"):
@@ -278,7 +269,7 @@ def show_quiz_mode():
         </div>
         """, unsafe_allow_html=True)
         
-        cols = st.columns(3)
+        cols = st.columns(len(data['opts']))
         for i, opt in enumerate(data['opts']):
             with cols[i]:
                 if st.button(opt, key=f"q2_{i}"):
@@ -347,13 +338,13 @@ def show_debug_info():
 def main():
     st.markdown("""
     <div class="header-container">
-        <h1 class="main-title">O LIYAL</h1>
-        <div class="sub-title">海洋</div>
-        <div class="teacher-tag">講師：孫秀蘭 | 教材提供者：孫秀蘭</div>
+        <h1 class="main-title">O 'ALO</h1>
+        <div class="sub-title">河流</div>
+        <div class="teacher-tag">講師：黃淑珍 | 教材提供者：黃淑珍</div>
     </div>
     """, unsafe_allow_html=True)
     
-    tab1, tab2 = st.tabs(["🌊 海洋筆記", "🎮 挑戰任務"])
+    tab1, tab2 = st.tabs(["🏞️ 河流筆記", "🎮 挑戰任務"])
     
     with tab1:
         show_learning_mode()
@@ -364,4 +355,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
